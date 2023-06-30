@@ -15,7 +15,7 @@
     "component",
     "vue-sorted-table"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./src/index.js",
   "repository": "git@github.com:bf/vue3-sorted-table.git",
   "private": false,

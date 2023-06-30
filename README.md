@@ -1,32 +1,26 @@
-# vue-sorted-table
-![MIT](https://img.shields.io/github/license/BernhardtD/vue-sorted-table.svg?style=flat-square)
-[![npm](https://img.shields.io/npm/v/vue-sorted-table.svg?style=flat-square)](https://www.npmjs.com/package/vue-sorted-table)
+# vue3-sorted-table
+![MIT](https://img.shields.io/github/license/BernhardtD/vue3-sorted-table.svg?style=flat-square)
+[![npm](https://img.shields.io/npm/v/vue3-sorted-table.svg?style=flat-square)](https://www.npmjs.com/package/vue3-sorted-table)
 
-A basic sorted table for Vue.js
+A basic sorted table for Vue3, updated version of [vue-sorted-table](https://github.com/BernhardtD/vue-sorted-table)
 
 ## Installation
 Install with NPM:
 
 ```bash
-npm install --save vue-sorted-table
+npm install --save vue3-sorted-table
 ```
 
-Import globally in app:
+Import globally in Nuxt3 app as a plugin in `nuxt-app/plugins/sorted-table.js`:
 
 ```javascript
-import SortedTablePlugin from "vue-sorted-table";
+import SortedTablePlugin from 'vue3-sorted-table'
 
-Vue.use(SortedTablePlugin);
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.use(SortedTablePlugin)
+})
 ```
 
-Or, using Vue:
-
-```javascript
-buildModules: [
-  // ...
-  'vue-sorted-table/nuxt'
-]
-```
 
 ## Examples
 ### Basic
@@ -48,13 +42,15 @@ The basic example shows how to use the `SortedTable` and `SortLink` components:
           </th>
         </tr>
       </thead>
-      <tbody #body="{ values }">
-        <tr v-for="value in values" :key="value.id">
-          <td>{{ value.id }}</td>
-          <td>{{ value.name }}</td>
-          <td>{{ value.hits }}</td>
-        </tr>
-      </tbody>
+      <template #body="{ values }">
+        <tbody>
+          <tr v-for="value in values" :key="value.id">
+            <td>{{ value.id }}</td>
+            <td>{{ value.name }}</td>
+            <td>{{ value.hits }}</td>
+          </tr>
+        </tbody>
+      </template>
     </sorted-table>
   </div>
 </template>
@@ -91,6 +87,7 @@ The sorted data is made accessible as a [scoped slot](https://vuejs.org/v2/guide
 ```html
 <template #body="sort">
   <tbody>
+    {{sort}}
   </tbody>
 </template>
 ```
@@ -103,139 +100,3 @@ Now we can access the slot scope via `sort` and iterate over the sorted values t
   <td>{{ value.hits }}</td>
 </tr>
 ```
-
-[![Edit vue-sorted-table - basic example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/xp37xr4pwo?module=%2Fsrc%2FApp.vue)
-
-### Advanced
-The advanced example is based on the basic example.
-It shows how to use the plugin configuration to set global sort icons:
-
-```javascript
-Vue.use(SortedTablePlugin, {
-  ascIcon: '<i class="material-icons">arrow_drop_up</i>',
-  descIcon: '<i class="material-icons">arrow_drop_down</i>'
-});
-```
-
-[![Edit vue-sorted-table - advanced example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/71v099zz56)
-
-### Nested values
-By default, the objects containing the values has to be a flat object.
-To support nested objects (`{ name: "Plugin Foo", user: { id: 1, name: "David Campbell" } }`) the plugin
-uses [lodash](https://lodash.com).
-
-At first, install lodash:
-```bash
-npm install --save lodash
-```
-
-Import lodash and register Vue prototype:
-```javascript
-import _ from "lodash";
-
-Vue.prototype.$_ = _;
-```
-
-Add sort link using the nested key:
-```html
-<sort-link name="user.name">Username</sort-link>
-```
-
-Extend `v-for` loop to render nested value:
-```html
-<tr v-for="value in sort.values" :key="value.id">
-  <td>{{ value.id }}</td>
-  <td>{{ value.name }}</td>
-  <td>{{ value.hits }}</td>
-  <td>{{ value.user.name }}</td>
-</tr>
-```
-
-[![Edit vue-sorted-table - nested example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/6nljqn2q8r)
-
-### Single File Components
-The `SortedTable` and `SortLink` components can be used without registering the plugin.
-Import the components, e.g. as part of a singe file component:
-```javascript
-import { SortedTable, SortLink } from "vue-sorted-table";
-```
-
-Register components locally:
-```javascript
-export default {
-  name: "App",
-  components: {
-    SortedTable,
-    SortLink
-  },
-  data: function() {
-    return {
-        // ..
-    };
-  }
-};
-```
-
-Add sort icons as property of the `SortedTable` tag:
-```html
-<sorted-table
-  :values="values"
-  ascIcon="<span> ▲</span>"
-  descIcon="<span> ▼</span>"
->
-  <!-- .. -->
-</sorted-table>
-```
-
-[![Edit vue-sorted-table - component example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/6139y2xo53?module=%2Fsrc%2FApp.vue)
-
-## Configuration
-The plugin configuration allows to set global sort icons, e.g. [Advanced Example](#Advanced)
-
-Option    | Description
-----------|----------------------
-`ascIcon` | Ascending sort icon.
-`descIcon`| Descending sort icon.
-
-## Components
-### `SortedTable`
-The `SortedTable` is the main component of the plugin. It is intended to be a replacement of the `<table></table>` tag.
-So instead using the old table tags, use `<SortedTable></SortedTable>`.
-
-#### Properties
-This component has the following properties:
-
-Property   | Required | Default | Description
------------|----------|---------|--------------------------------------------------------------
-`values`   |yes       |null     |Array of objects containing the values which should be sorted.
-`dir`      |no        |asc      |Sort direction. Valid values: ("asc"\|"desc")
-`sort`     |no        |id       |Default sorting. Could be any valid object key.
-`ascIcon`  |no        |         |Ascending icon. Overwrites default or globally set icon.
-`descIcon` |no        |         |Descending icon. Overwrites default or globally set icon.
-`onSort`   |no        |null     |Alternative function for value sorting.
-
-#### Events
-This component emits the following event:
-
-- `sort-table`
-  - This event will be emited on each new sort action, e.g. click on sort link.
-  - arg0: sort property name, e.g. id
-  - arg1: sort direction, e.g. asc
-
-### `SortLink`
-This component adds a link to sort the given values. A sort icon is attached automatically to link.
-
-#### Properties
-This component has the following properties:
-
-Property | Required | Default | Description
----------|----------|---------|-------------------------------------------------------
-`name`   |yes       |         |The object key name on which the values will be sorted.
-
-#### Slots
-| Slot    | Description                    |
-|---------|--------------------------------|
-| Default | Slot to pass link text.        |
-| Icon    | Slot to use custom sort icons. |
-
-[![Edit vue-sorted-table - icon example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/vue-sorted-table-icon-example-jul4d?fontsize=14&hidenavigation=1&theme=dark)
