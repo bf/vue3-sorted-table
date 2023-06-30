@@ -8,119 +8,138 @@
 </template>
 
 <script>
+import { watch, provide, ref } from "vue";
+
 export default {
   name: "SortedTable",
-  provide: function() {
-    return {
-      getCurrentSort: this.getCurrentSort,
-      getSortIcon: this.getSortIcon,
-      sortBy: this.sortBy
-    };
-  },
   props: {
     values: {
       type: Array,
       required: true,
-      default: null
+      default: null,
     },
     dir: {
       type: String,
-      default: "asc"
+      default: "asc",
     },
     sort: {
       type: String,
-      default: "id"
+      default: "id",
     },
     ascIcon: {
       type: String,
-      default: ""
+      default: "<span> ▲</span>",
     },
     descIcon: {
       type: String,
-      default: ""
+      default: "<span> ▼</span>",
     },
     onSort: {
       type: null,
-      default: null
-    }
+      default: null,
+    },
   },
-  data: function() {
+  emits: ["sort-table"],
+  setup(props) {
+    const sortOrder = ref({
+      direction: props.dir,
+      column: props.sort,
+    });
+
+    function updateSortByColumn(newSortByColumn) {
+      let newSortDirection;
+      if (newSortByColumn == sortOrder.value.column) {
+        // if same column is sorted as before, then change direction
+        newSortDirection = sortOrder.value.direction === "asc" ? "desc" : "asc";
+      } else {
+        // keep old direction
+        newSortDirection = sortOrder.value.direction;
+      }
+
+      sortOrder.value = {
+        direction: newSortDirection,
+        column: newSortByColumn,
+      };
+    }
+
+    provide("sortOrder", {
+      sortOrder,
+      updateSortByColumn,
+    });
+
+    provide("sortIcon", () => {
+      if (sortOrder.value.direction == "asc") {
+        // ascending icon
+        if (props.ascIcon) {
+          return props.ascIcon;
+        }
+      } else {
+        // descending icon
+        if (props.descIcon) {
+          return props.descIcon;
+        }
+      }
+    });
+
     return {
-      currentDir: this.dir,
-      currentSort: this.sort
+      sortOrder,
     };
   },
   computed: {
-    get: function() {
+    get: function () {
       if (this.$_) {
         return this.$_.get;
       } else {
         return this.getValue;
       }
     },
-    sortedValues: function() {
+    sortedValues: function () {
       if (this.onSort) {
         return this.values;
-      } else {
-        return this.values.slice().sort(
-          function(a, b) {
-            let modifier = 1;
-            if (this.currentDir === "desc") {
-              modifier = -1;
-            }
-            if (this.get(a, this.currentSort) < this.get(b, this.currentSort)) {
-              return -1 * modifier;
-            }
-            if (this.get(a, this.currentSort) > this.get(b, this.currentSort)) {
-              return 1 * modifier;
-            }
-            return 0;
-          }.bind(this)
-        );
       }
+
+      if (!this.values) {
+        return [];
+      }
+
+      return this.values.slice().sort(
+        function (a, b) {
+          let modifier = 1;
+          if (this.sortOrder.direction === "desc") {
+            modifier = -1;
+          }
+          if (
+            this.get(a, this.sortOrder.column) <
+            this.get(b, this.sortOrder.column)
+          ) {
+            return -1 * modifier;
+          }
+          if (
+            this.get(a, this.sortOrder.column) >
+            this.get(b, this.sortOrder.column)
+          ) {
+            return 1 * modifier;
+          }
+          return 0;
+        }.bind(this)
+      );
     },
-    asc: function() {
-      if (this.ascIcon == "") {
-        return this.$sortedTable.ascIcon;
-      } else {
-        return this.ascIcon;
+  },
+  mounted() {
+    watch(this.sortOrder, (oldSortOrder, newSortOrder) => {
+      // emit change event
+      this.$emit("sort-table", newSortOrder.column, newSortOrder.direction);
+
+      // call onSort handler
+      if (this.onSort) {
+        this.onSort(newSortOrder.column, newSortOrder.direction);
       }
-    },
-    desc: function() {
-      if (this.descIcon == "") {
-        return this.$sortedTable.descIcon;
-      } else {
-        return this.descIcon;
-      }
-    }
+    });
   },
   methods: {
-    getValue: function(array, key) {
+    getValue: function (array, key) {
       return array[key];
     },
-    getCurrentSort: function() {
-      return this.currentSort;
-    },
-    getSortIcon: function() {
-      if (this.currentDir === "asc") {
-        return this.asc;
-      } else {
-        return this.desc;
-      }
-    },
-    sortBy: function(s) {
-      //if s == current sort, reverse
-      if (s === this.currentSort) {
-        this.currentDir = this.currentDir === "asc" ? "desc" : "asc";
-      }
-      this.currentSort = s;
-
-      this.$emit("sort-table", this.currentSort, this.currentDir);
-
-      if (this.onSort) {
-        this.onSort(this.currentSort, this.currentDir);
-      }
-    }
-  }
+  },
 };
 </script>

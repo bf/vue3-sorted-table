@@ -1,22 +1,33 @@
 <template>
-  <a href="#" @click.prevent="sortBy(name)">
+  <a href="#" @click.prevent="updateSortByColumn(name)">
     <slot>{{ name }}</slot>
     <slot name="icon">
-      <span v-if="getCurrentSort() == name" v-html="getSortIcon()" />
+      <span v-if="sortOrder.column == name" v-html="sortIcon()" />
     </slot>
   </a>
 </template>
 
 <script>
+import { inject } from "vue";
+
 export default {
   name: "SortLink",
-  inject: ["getCurrentSort", "getSortIcon", "sortBy"],
   props: {
     name: {
       type: String,
       required: true,
-      default: ""
-    }
-  }
+      default: "",
+    },
+  },
+  setup() {
+    const sortIcon = inject("sortIcon");
+    const { sortOrder, updateSortByColumn } = inject("sortOrder");
+
+    return {
+      sortIcon,
+      sortOrder,
+      updateSortByColumn,
+    };
+  },
 };
 </script>

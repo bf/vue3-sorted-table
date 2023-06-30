@@ -1,13 +1,16 @@
-import Vue from "vue";
+// import { mount } from "@vue/test-utils";
+import { createApp } from "vue";
+
 import SortedTablePlugin from "./index.js";
 import App from "./App.vue";
 
-Vue.use(SortedTablePlugin, {
-  ascIcon: "<span> up</span>",
-  descIcon: "<span> down</span>"
-});
-Vue.config.productionTip = false;
+// create an extended `Vue` constructor
+const app = createApp(App);
 
-new Vue({
-  render: h => h(App)
-}).$mount("#app");
+app.use(SortedTablePlugin, {
+  ascIcon: "<span> up</span>",
+  descIcon: "<span> down</span>",
+});
+app.config.productionTip = false;
+
+app.mount("#app");
