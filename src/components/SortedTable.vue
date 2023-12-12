@@ -87,11 +87,11 @@ export default {
   },
   computed: {
     get: function () {
-      if (this.$_) {
-        return this.$_.get;
-      } else {
-        return this.getValue;
-      }
+      // if (this.$_) {
+      //   return this.$_.get;
+      // } else {
+      return this.getValue;
+      // }
     },
     sortedValues: function () {
       if (this.onSort) {
